@@ -2,34 +2,55 @@
 
 import { useState, useRef } from 'react';
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
-import { Container, AppBar, Toolbar, Typography, Button, Box, Menu, MenuItem, IconButton } from '@mui/material';
+import {
+  Container,
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Box,
+  Menu,
+  MenuItem,
+  IconButton,
+} from '@mui/material';
 import { MoreVert as MoreVertIcon } from '@mui/icons-material';
 import Head from 'next/head';
 import { Link as ScrollLink } from 'react-scroll';
+import { useRouter } from 'next/navigation';
+import getStripe from '../utils/getStripe'; // Import getStripe utility
 
 export default function Home() {
-  const handleSubmit=async()=>{
-    const checkoutsession=await fetch ('/api/checkout_session',{
-      method:'POST',
-      headers:{
-        origin:'https://localhost:3000',
+  const router = useRouter();
 
-      },
-    }) 
-    const checkoutsessionJson=await checkoutSession.json()
-    if (checkoutsession.statusCode==500){
-      console.error(checkoutsession.message)
-      return
-    }
-    const stripe=await getStripe()
-     const (error)= await stripe.redirectToCheckout ({
-      sessionId:checkoutsessionJson.id,
-  
-     })
-      if (error){
-        console.warn(error.message)
+  const handleSubmit = async () => {
+    try {
+      const checkoutsession = await fetch('/api/checkout_session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const checkoutsessionJson = await checkoutsession.json();
+
+      if (checkoutsessionJson.statusCode === 500) {
+        console.error(checkoutsessionJson.message);
+        return;
       }
-  }
+
+      const stripe = await getStripe();
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: checkoutsessionJson.id,
+      });
+
+      if (error) {
+        console.error('Error redirecting to checkout:', error.message);
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error.message);
+    }
+  };
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const handleMenuClick = (event) => setAnchorEl(event.currentTarget);
@@ -44,8 +65,8 @@ export default function Home() {
       maxWidth="lg"
       sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom, #2e026d, #000000)', // Gradient similar to Spotify
-        color: 'white', // Ensure text is visible against dark background
+        background: 'linear-gradient(to bottom, #2e026d, #000000)',
+        color: 'white',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -53,9 +74,7 @@ export default function Home() {
       }}
     >
       <Head>
-        <title>QuickNotes
-
-        </title>
+        <title>QuickNotes</title>
         <meta name="description" content="Create flashcards from your text" />
       </Head>
 
@@ -125,12 +144,25 @@ export default function Home() {
         <Typography variant="h5" paragraph sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
           The smartest way to manage and create flashcards from your notes.
         </Typography>
-        <Button variant="contained" color="secondary" size="large" sx={{ mt: 2, borderRadius: 20, mr: 2 }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          size="large"
+          sx={{ mt: 2, borderRadius: 20, mr: 2 }}
+          onClick={() => {
+            router.push('/generate');
+          }}
+        >
           Get Started
         </Button>
         <ScrollLink to="pricing" smooth={true} duration={500}>
-          <Button variant="contained" color="primary" size="large" sx={{ mt: 2, borderRadius: 20, color: 'white', borderColor: 'white' }}>
-            View Plans   
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            sx={{ mt: 2, borderRadius: 20, color: 'white', borderColor: 'white' }}
+          >
+            View Plans
           </Button>
         </ScrollLink>
       </Box>
@@ -141,20 +173,50 @@ export default function Home() {
           Why Choose QuickNotes?
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
-          <Box sx={{ flex: 1, p: 2, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#353C46' }}>
-            <Typography variant="h6" sx={{ fontWeight:'bold' ,color:'black'}}>Easy Text Input</Typography>
+          <Box
+            sx={{
+              flex: 1,
+              p: 2,
+              borderRadius: 2,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              backgroundColor: '#353C46',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'black' }}>
+              Easy Text Input
+            </Typography>
             <Typography sx={{ color: 'text.white' }}>
               Simply input your text and let QuickNotes generate flashcards automatically.
             </Typography>
           </Box>
-          <Box sx={{ flex: 1, p: 2, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#353C46' }}>
-            <Typography variant="h6" sx={{ fontWeight:'bold', color:'black' }}>Smart Flashcards</Typography>
+          <Box
+            sx={{
+              flex: 1,
+              p: 2,
+              borderRadius: 2,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              backgroundColor: '#353C46',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'black' }}>
+              Smart Flashcards
+            </Typography>
             <Typography sx={{ color: 'text.white' }}>
               AI-powered flashcards, perfect for studying and mastering content.
             </Typography>
           </Box>
-          <Box sx={{ flex: 1, p: 2, borderRadius: 2, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', backgroundColor: '#353C46' }}>
-            <Typography variant="h6" sx={{ fontWeight:'bold', color:'black' }}>Anywhere Access</Typography>
+          <Box
+            sx={{
+              flex: 1,
+              p: 2,
+              borderRadius: 2,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              backgroundColor: '#353C46',
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'black' }}>
+              Anywhere Access
+            </Typography>
             <Typography sx={{ color: 'text.white' }}>
               Access your flashcards from any device, anytime, anywhere.
             </Typography>
@@ -180,31 +242,45 @@ export default function Home() {
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Pricing Plans
         </Typography>
-        <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary', fontWeight:'bold' }}>
+        <Typography variant="h6" sx={{ mb: 4, color: 'text.secondary', fontWeight: 'bold' }}>
           Choose a plan that fits your needs:
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4 }}>
-          <Box sx={{ flex: 1, p: 2, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: '#7396D3' }}>
+          <Box
+            sx={{
+              flex: 1,
+              p: 2,
+              borderRadius: 2,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              backgroundColor: '#7396D3',
+            }}
+          >
             <Typography variant="h6"> Basic</Typography>
             <Typography sx={{ color: 'text.secondary' }}>$5 / month</Typography>
-            <Button variant="contained" color="secondary" sx={{ mt: 2, borderRadius: 20}}>
-               Basic
+            <Button variant="contained" color="secondary" sx={{ mt: 2, borderRadius: 20 }}>
+              Basic
             </Button>
           </Box>
-          <Box sx={{ flex: 1, p: 2, borderRadius: 2, boxShadow: '0 4px 20px rgba(0,0,0,0.1)', backgroundColor: '#7396D3' }}>
+          <Box
+            sx={{
+              flex: 1,
+              p: 2,
+              borderRadius: 2,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              backgroundColor: '#7396D3',
+            }}
+          >
             <Typography variant="h6">Pro</Typography>
             <Typography sx={{ color: 'text.primary' }}>$10 / month</Typography>
-            <Typography>
-              {''}
-            </Typography>
             <Button variant="contained" color="primary" sx={{ mt: 2, borderRadius: 20 }} onClick={handleSubmit}>
-               Pro
-            </Button>  
+              Pro
+            </Button>
           </Box>
         </Box>
       </Box>
     </Container>
   );
 }
+
 
 
